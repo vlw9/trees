@@ -1,0 +1,26 @@
+/* Victoria Wu vlw9 */
+* {
+  font-family: Tahoma;
+}
+/* make site responsive */
+@media only screen and (max-width:780px){
+    .card .destroy {
+        margin-left: 8%;
+    }
+}
+
+@media only screen and (max-width:900px){
+    .list-wrapper button, .list-wrapper label {
+        margin-top: 3%;
+    }
+}
+
+/*set background colors for body, cards and lists*/
+body{
+    padding-top: 2.5%;
+    padding-left: 3%;
+    padding-right: 3%;
+    padding-bottom: 4%;
+    /* background-image: url("../malen/droplets.jpg"); /* credit to wallpapercave site */ */
+    background-attachment: fixed; /* Usually prefer fixed but if user uploads taller image, can see more of that image this way */
+}

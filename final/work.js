@@ -7,6 +7,8 @@ Vue.directive('focus', {
 
 var i;
 var j;
+// var page = 1;
+
 
 var config = {
   apiKey: "AIzaSyC0K41GpMkumS2nGnAZcd0Z_eFy6ldNR48",
@@ -23,17 +25,19 @@ var app = new Vue({
   data: {
     lists: [],
     users: [],
+    pages: [],
     visibleInput: null, // key of list that has visible input for adding cards
     editTitleInput: null, // ... editing title
     addListText: "",
-    // addACard: false,
     name: "",
     email: "",
     pwort: "",
     currentCategory: "",
-    size: "",
-    year: "",
+    // size: "",
+    // year: "",
+    link: "",
     loggedIn: false,
+    page: 1,
     requestAdmin: false,
     isAdmin: false,
     isGuest: false,
@@ -41,13 +45,6 @@ var app = new Vue({
     editCardDescInput: false,
     editCardTextInput: false,
     editCardCategoryInput: false,
-    colors: [
-      "#337435",
-      "#e26a44",
-      "#333",
-      "#f1e312",
-    ],
-    currentColor: "#337435",
     editUser: false,
     horizView: false,
     categoriesVisible: false,
@@ -56,53 +53,88 @@ var app = new Vue({
     commentText: "",
   },
   methods: {
+    homepage: function() {
+      this.page = 1;
+    },
+    artistsPage: function() {
+      this.page = 2;
+    },
+    writersPage: function() {
+      this.page = 3;
+    },
     showInput: function(l) {
       l.isInputVisible = true;
     },
     editTitle: function() {
       this.editTitleInput = null; // unfocus
-      this.writeData("lists", this.lists);
+      if (this.page == 3) {
+        this.writeData("pages", this.pages);
+      }
+      else {
+        this.writeData("lists", this.lists);
+      }
     },
     editCardText:function() {
       this.editCardTextInput=false;
-      this.writeData('lists', this.lists);
+      if (this.page == 3) {
+        this.writeData("pages", this.pages);
+      }
+      else {
+        this.writeData("lists", this.lists);
+      }
     },
     editCardDesc:function() {
       this.editCardDescInput=false;
-      this.writeData('lists', this.lists);
+      if (this.page == 3) {
+        this.writeData("pages", this.pages);
+      }
+      else {
+        this.writeData("lists", this.lists);
+      }
     },
     editCardCategory: function() {
       this.editCardCategoryInput = false;
-      this.writeData('lists', this.lists);
+      if (this.page == 3) {
+        this.writeData("pages", this.pages);
+      }
+      else {
+        this.writeData("lists", this.lists);
+      }
     },
     showCategories: function() {
-      this.categories.splice(0, this.categories.length); // clear categories
-      for (i = 0; i < this.lists.length; i++) {
-        for (j = 0; j < this.lists[i].cards.length; j++) {
-          var category = this.lists[i].cards[j].category;
-          // console.log(category);
-          if (this.categories.indexOf(category) == -1) {
-            this.categories.push(category);
+      if (this.pages == 3) {
+        this.categories.splice(0, this.categories.length); // clear categories
+        for (i = 0; i < this.pages.length; i++) {
+          for (j = 0; j < this.pages[i].cards.length; j++) {
+            var category = this.pages[i].cards[j].category;
+            // console.log(category);
+            if (this.categories.indexOf(category) == -1) {
+              this.categories.push(category);
+            }
           }
         }
       }
+      else {
+        this.categories.splice(0, this.categories.length); // clear categories
+        for (i = 0; i < this.lists.length; i++) {
+          for (j = 0; j < this.lists[i].cards.length; j++) {
+            var category = this.lists[i].cards[j].category;
+            // console.log(category);
+            if (this.categories.indexOf(category) == -1) {
+              this.categories.push(category);
+            }
+          }
+        }
+    }
     },
     clickCategory: function(category) {
       this.currentCategory = category;
     },
-    addTodo: function(card) {
-      if (!("todos" in card)) { // if todos array not found ...
-        Vue.set(card, "todos", []); // create empty todos array
-      }
-      card.todos.push(this.todoText);
-      this.todoText = ""; // clear input
-      this.writeData("lists", this.lists);
-    },
-    deleteTodo: function(card, todoIndex) {
-      card.todos.splice(todoIndex, 1);
-      this.writeData("lists", this.lists);
-    },
     addComment: function(card) {
+      if (this.isGuest) {
+        alert("You cannot do this while in guest mode. Please log in to store any preferences.")
+        return;
+      }
       if (!("comments" in card)) { // if comments array not found ...
         Vue.set(card, "comments", []); // create empty comments array
       }
@@ -112,17 +144,43 @@ var app = new Vue({
         owner: this.currentCard.category
       });
       this.commentText = ""; // clear input
-      this.writeData("lists", this.lists);
-    },
-    deleteComment: function(card, commentIndex) { //artist can delete any comment, but comment maker can only delete their own
-      if (this.name == card.comments[commentIndex].owner) {
-        card.comments.splice(commentIndex, 1);
-      }
-      else if (this.name == card.comments[commentIndex].user) {
-        card.comments.splice(commentIndex, 1);
+      if (this.page == 3) {
+        this.writeData("pages", this.pages);
       }
       else {
-        alert("You cannot delete this comment! You may only delete comments on your own work or comments you have made yourself.");
+        this.writeData("lists", this.lists);
+      }
+    },
+    deleteComment: function(card, commentIndex) { //artist can delete any comment, but comment maker can only delete their own
+      if (this.name == card.comments[commentIndex].owner) { //person deleting comments on their own thing
+        card.comments.splice(commentIndex, 1);
+        if (this.page == 3) {
+          this.writeData("pages", this.pages);
+        }
+        else {
+          this.writeData("lists", this.lists);
+        }
+      }
+      else if (this.name == card.comments[commentIndex].user) { //person deleting a comment they made on someone else's thing
+        card.comments.splice(commentIndex, 1);
+        if (this.page == 3) {
+          this.writeData("pages", this.pages);
+        }
+        else {
+          this.writeData("lists", this.lists);
+        }
+      }
+      else if (this.name == "Admin") { //Admin removing any comment
+        card.comments.splice(commentIndex, 1);
+        if (this.page == 3) {
+          this.writeData("pages", this.pages);
+        }
+        else {
+          this.writeData("lists", this.lists);
+        }
+      }
+      else {
+        alert("You cannot delete this comment. Unless you are an administrator, you may only delete comments on your own work or comments you have made yourself.");
       }
     },
     editUserSubmit: function() {
@@ -130,59 +188,145 @@ var app = new Vue({
       this.writeData("users", this.users);
     },
     newCard: function(l) {
-      l.cards.push({
-        id: Date.now(),
-        text: l.inputText,
-        desc: "Include your artist's statement here",
-        timestamp: Date.now(),
-        name: this.name,
-        email: this.email,
-        category: this.name, //used to filter by artist/writer
-        todos: []
-      });
-      l.inputText = ""; // clear text
-      this.writeData("lists", this.lists);
+      if (this.isGuest) {
+        alert("You cannot do this while in guest mode. Please log in to store any preferences.")
+        return;
+      }
+      if (this.page == 2) {
+        l.cards.push({
+          id: Date.now(),
+          text: l.inputText,
+          desc: "You may include an artist's statement here if you wish.",
+          timestamp: Date.now(),
+          name: this.name,
+          email: this.email,
+          category: this.name, //used to filter by artist/writer
+          todos: []
+        });
+        l.inputText = ""; // clear text
+        this.writeData("lists", this.lists);
+      }
+      else {
+        l.cards.push({
+          id: Date.now(),
+          text: l.inputText,
+          desc: "You may wish to type a summary of your work here.",
+          timestamp: Date.now(),
+          name: this.name,
+          email: this.email,
+          category: this.name, //used to filter by artist/writer
+          todos: []
+        });
+        l.inputText = ""; // clear text
+        this.writeData("pages", this.pages);
+      }
     },
     newList: function() {
-      this.lists.push({
-        id: Date.now(),
-        title: this.addListText,
-        cards: []
-      });
-      this.writeData("lists", this.lists);
+      if (this.isGuest) {
+        alert("You cannot do this while in guest mode. Please log in to store any preferences.")
+        return;
+      }
+      if (this.page == 2) {
+        this.lists.push({
+          id: Date.now(),
+          title: this.addListText,
+          cards: []
+        });
+        this.writeData("lists", this.lists);
+      }
+      else {
+        this.pages.push({
+          id: Date.now(),
+          title: this.addListText,
+          cards: []
+        });
+        this.writeData("pages", this.pages);
+      }
       this.addListText = "";
 
     },
     moveList: function(listIndex, dir) {
-      if (listIndex + dir >= 0 && listIndex + dir <= this.lists.length-1) { // if move is valid
-        var list = this.lists[listIndex];
-        if (dir == -1) { // change order
-          this.lists.splice(listIndex + dir, 0, list);
-          this.lists.splice(listIndex-dir, 1);
-        } else {
-          this.lists.splice(listIndex + dir + 1, 0, list);
-          this.lists.splice(listIndex, 1);
+      if (this.isGuest) {
+        alert("You cannot do this while in guest mode. Please log in to store any preferences.")
+        return;
+      }
+      if (this.page == 2) {
+        if (listIndex + dir >= 0 && listIndex + dir <= this.lists.length-1) { // if move is valid
+          var list = this.lists[listIndex];
+          if (dir == -1) { // change order
+            this.lists.splice(listIndex + dir, 0, list);
+            this.lists.splice(listIndex-dir, 1);
+          } else {
+            this.lists.splice(listIndex + dir + 1, 0, list);
+            this.lists.splice(listIndex, 1);
+          }
         }
         this.writeData("lists", this.lists);
       }
+      else {
+        if (listIndex + dir >= 0 && listIndex + dir <= this.pages.length-1) { // if move is valid
+          var list = this.pages[listIndex];
+          if (dir == -1) { // change order
+            this.pages.splice(listIndex + dir, 0, list);
+            this.pages.splice(listIndex-dir, 1);
+          } else {
+            this.pages.splice(listIndex + dir + 1, 0, list);
+            this.pages.splice(listIndex, 1);
+          }
+        }
+        this.writeData("pages", this.pages);
+      }
+
     },
-    moveCard: function(card, listIndex, dir) {
+    moveCard: function(card, listIndex, dir) { //probably remove or replace with up down one
+      if (this.isGuest) {
+        alert("You cannot do this while in guest mode. Please log in to store any preferences.")
+        return;
+      }
       if (listIndex + dir >= 0 && listIndex + dir <= this.lists.length-1) { // if move is valid
         var cards = this.lists[listIndex].cards;
         cards.splice(cards.indexOf(card), 1); // remove card
         this.lists[listIndex + dir].cards.push(card); // add it to next list
-        this.writeData("lists", this.lists);
+        if (this.page == 3) {
+          this.writeData("pages", this.pages);
+        }
+        else {
+          this.writeData("lists", this.lists);
+        }
       }
     },
     deleteCard: function(listIndex, cardIndex) {
-      if (this.name == this.lists[listIndex].cards[cardIndex].name) {
-        this.lists[listIndex].cards.splice(cardIndex, 1);
-        this.writeData("lists", this.lists);
+      if (this.isGuest) {
+        alert("You cannot do this while in guest mode. Please log in to store any preferences.")
+        return;
+      }
+      if (this.page == 2) {
+        // console.log(listIndex, cardIndex);
+        if (this.name == this.lists[listIndex].cards[cardIndex].name) {
+          this.lists[listIndex].cards.splice(cardIndex, 1);
+          this.writeData("lists", this.lists);
+        }
+        else if (this.name == "Admin") {
+          this.lists[listIndex].cards.splice(cardIndex, 1);
+          this.writeData("lists", this.lists);
+        }
+        else {
+          alert("You cannot delete work that isn't yours!");
+        }
       }
       else {
-        alert("You cannot delete work that isn't yours!");
+        if (this.name == this.pages[listIndex].cards[cardIndex].name) {
+          this.pages[listIndex].cards.splice(cardIndex, 1);
+          this.writeData("pages", this.pages);
+        }
+        else if (this.name == "Admin") {
+          this.pages[listIndex].cards.splice(cardIndex, 1);
+          this.writeData("pages", this.pages);
+        }
+        else {
+          alert("You cannot delete work that isn't yours!");
+        }
       }
-
     },
 
     // numCards: function() { //bool to determine whether to show "add a card" option
@@ -273,22 +417,78 @@ var app = new Vue({
     writeData: function(key, data) {
       firebase.database().ref("/" + key).set(data);
     },
-    collapseExpandList: function(listIndex) {
-      if ("collapsed" in this.lists[listIndex]) {
-        this.lists[listIndex].collapsed = !this.lists[listIndex].collapsed; // invert
-      } else {
-        Vue.set(this.lists[listIndex], "collapsed", true);
+    collapseExpandList: function(listIndex) { //alright, I'll let the guests do this haha
+      if (this.page == 2) {
+        if ("collapsed" in this.lists[listIndex]) {
+          this.lists[listIndex].collapsed = !this.lists[listIndex].collapsed; // invert
+        } else {
+          Vue.set(this.lists[listIndex], "collapsed", true);
+        }
+        this.writeData("lists", this.lists);
       }
-      this.writeData("lists", this.lists);
+      else {
+        if ("collapsed" in this.pages[listIndex]) {
+          this.pages[listIndex].collapsed = !this.pages[listIndex].collapsed; // invert
+        } else {
+          Vue.set(this.pages[listIndex], "collapsed", true);
+        }
+        this.writeData("pages", this.pages);
+      }
     },
-    deleteList: function(listIndex) {
-      this.lists.splice(listIndex, 1);
-      this.writeData("lists", this.lists);
+    // hasOne: function(list) {
+    //   for (i = 0; i < list.length; i++) {
+    //     if (list[i].cards.length > 0) {
+    //       return false;
+    //     }
+    //   }
+    //   return true;
+    // },
+    deleteList: function(listIndex) { //only administrators may remove complete mediums
+      if (this.isGuest) {
+        alert("You cannot do this while in guest mode. Please log in to store any preferences.")
+        return;
+      }
+      if (this.page == 2) {
+        if (this.name == "Admin") {
+          this.lists.splice(listIndex, 1);
+          this.writeData("lists", this.lists);
+        }
+        else if (this.lists[listIndex].cards.length == 0) {
+          this.lists.splice(listIndex, 1);
+          this.writeData("lists", this.lists);
+        }
+        else {
+          // console.log(this.lists[listIndex].cards.length);
+          alert("Only administrators may remove non-empty categories. If all the works in a category are owned by you, you can remove that category by first removing the individual works.")
+        }
+      }
+      else { //if we're on the writing page
+        if (this.name == "Admin") {
+          this.pages.splice(listIndex, 1);
+          this.writeData("pages", this.pages);
+        }
+        else if (this.pages[listIndex].cards.length == 0) {
+          this.pages.splice(listIndex, 1);
+          this.writeData("pages", this.pages);
+        }
+        else {
+          // console.log(this.lists[listIndex].cards.length);
+          alert("Only administrators may remove non-empty categories. If all the works in a category are owned by you, you can remove that category by first removing the individual works.")
+        }
+      }
     },
     showCardModal: function(card) {
       this.currentCard = card;
     },
+    // makepdf: function() {
+    //   console.log(this.currentCard.link);
+    //   // https://drive.google.com/viewerng/viewer?embedded=true&url=
+    // },
     uploadImage(e) {
+      if (this.isGuest) {
+        alert("You cannot do this while in guest mode. Please log in to store any preferences.")
+        return;
+      }
       // get file(s)
       var files = e.target.files || e.dataTransfer.files;
       // generate image ID
@@ -304,9 +504,18 @@ var app = new Vue({
         // get URL
         firebase.storage().ref(imageName).getDownloadURL().then(function(url) {
           vm.currentCard.images.push(url);
+          vm.currentCard.link = "https://drive.google.com/viewerng/viewer?embedded=true&url=" + url;
+          // console.log(url);
           // update db
-          vm.writeData("lists", vm.lists);
-          alert("Image uploaded!");
+          if (vm.page == 2) {
+            vm.writeData("lists", vm.lists);
+            alert("Image uploaded!");
+          }
+          else {
+            vm.writeData("pages", vm.pages);
+            alert("Your piece has been uploaded!");
+            // console.log(url);
+          }
         });
 
       });
@@ -333,6 +542,18 @@ var app = new Vue({
         vm.users.push(data.users[i]);
       }
 
+
+      if ("pages" in data) { // check if lists exist in database
+        for (i = 0; i < data.pages.length; i++) {
+          vm.pages.push(data.pages[i]);
+          // console.log(data.lists[i]);
+
+          if (!("cards" in data.pages[i])) { // check if list has cards
+            data.pages[i].cards = []; // add empty cards array if no cards
+          }
+        }
+      }
+
       // prevent further reads
       firebase.database().ref("/").off("value", readData);
     }
@@ -340,8 +561,3 @@ var app = new Vue({
     firebase.database().ref("/").on("value", readData);
   }
 });
-
-// console.log(app.data);
-
-
-// .files[0].name;

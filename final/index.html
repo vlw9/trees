@@ -1,32 +1,28 @@
 
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
     <title>Final Project</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="https://cdn.jsdelivr.net/npm/vue@2.5.13/dist/vue.js"></script>
     <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,700" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
     <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
     <script src="https://www.gstatic.com/firebasejs/4.10.1/firebase.js"></script>
     <link href="stylef.css" rel="stylesheet">
-
   </head>
   <body>
+    <!-- <script type="text/javascript">
+    rand();
+    </script> -->
     <!-- <a href="../game/index.html" title="Game" target='_blank'>Game</a> -->
-    <div id="app" :style="{'background-color':currentColor}">
+    <div id="app">
+      <!-- <div id="app" :style="{'background-image':url('http://bestanimations.com/Holidays/Christmas/xmastree/christmas-tree-animated-gif-27.gif')}"> -->
       <div id="nav">
         <h1>Platform</h1>
-        <!-- <div v-if="page==3">
-          <! make is so that clicking on writing or art works, wrap below in art -->
-				<!-- code here -->
-			<!-- </div> --> -->
+			<!-- </div> -->
         <!-- <h1><a href="../game/index.html" title="Game" target='_blank'>Game</a></h1> -->
         <div class="right-nav">
-          <div class="nav-block"
-            v-for="color in colors"
-            :style="{'background-color': color}"
-            v-show="currentColor!==color"
-            @click="currentColor=color"></div>
           <div class="nav-block">
             <i class="icon ion-arrow-right-c"
               :class="{'ion-arrow-down-c':horizView}"
@@ -45,82 +41,6 @@
           <div class="nav-block" v-show="loggedIn">
               <p> {{ name }}</p>
           </div>
-
-          <!-- <div class="nav-block">
-            <i class="icon ion-person"
-              @click="editUser=true"></i>
-          </div> -->
-        </div>
-      </div>
-
-      <div id="lists-wrapper">
-        <div v-for="(list, listIndex) in lists" class="list"
-          :class="{'list-horiz':horizView}"
-          :key="list.id" :data-key="list.id">
-
-          <div class="tooltip">
-            <i class="icon ion-arrow-left-a"
-              @click.stop="moveList(listIndex, -1)"></i>
-            <i class="icon ion-arrow-right-a"
-              @click.stop="moveList(listIndex, 1)"></i>
-            <i class="icon ion-minus-round"
-              v-show="!list.collapsed"
-              @click.stop="collapseExpandList(listIndex)"></i>
-            <i class="icon ion-plus-round"
-              v-show="list.collapsed"
-              @click.stop="collapseExpandList(listIndex)"></i>
-            <i class="icon ion-close-round"
-              @click.stop="deleteList(listIndex)"></i>
-          </div>
-
-          <h2
-            @click="editTitleInput=list.id"
-            v-show="editTitleInput!==list.id">
-            {{ list.title }}</h2>
-          <input v-focus class="title-input"
-            v-show="editTitleInput===list.id"
-            @keyup.enter="editTitle"
-            v-model="list.title"
-            @blur="editTitle">
-
-          <p class="collapse-notify" v-show="list.collapsed">List is collapsed</p>
-
-          <div class="cards-wrapper"
-            v-show="!list.collapsed"
-            :class="{'cards-wrapper-horiz':horizView}">
-            <div class="card"
-              :class="{'card-horiz':horizView}"
-              v-for="(card, cardIndex) in list.cards"
-              v-show="currentCategory == card.category || currentCategory == ''"
-              @click="showCardModal(card)"
-              :key="card.id" >
-              <img v-if="card.images" :src="card.images[0]" alt="card image">
-              <p>{{ card.text }}</p>
-              <div class="tooltip">
-                <i class="icon ion-arrow-left-a"
-                  @click.stop="moveCard(card, listIndex, -1)"></i>
-                <i class="icon ion-arrow-right-a"
-                  @click.stop="moveCard(card, listIndex, 1)"></i>
-                <i class="icon ion-close-round"
-                  @click.stop="deleteCard(listIndex, cardIndex)"></i>
-              </div>
-            </div>
-          </div>
-          <div class="add-card"
-            @click="visibleInput=list.id"
-            v-show="visibleInput!==list.id">
-            Add new work (title here)
-          </div>
-          <input v-focus class="card-input"
-            v-show="visibleInput===list.id"
-            @keyup.enter="newCard(list)"
-            v-model="list.inputText"
-            @blur="visibleInput=null">
-        </div>
-        <div class="add-list">
-          <input class="card-input" placeholder="Add a new medium"
-            v-model="addListText"
-            @keyup.enter="newList">
         </div>
       </div>
 
@@ -144,91 +64,328 @@
         </div>
       </div>
 
-      <!-- <div class="edit-user-modal modal" v-show="editUser">
-        <div class="center">
-          <input class="card-input mb10" v-model="name" placeholder="Userame">
-          <input class="card-input mb10" v-model="email" placeholder="Email">
-          <div class="lr-button" @click="editUserSubmit">Return to Site</div>
-        </div>
-      </div> -->
-
-      <div class="card-modal modal" v-show="currentCard">
-          <div class="background">
-            <i class="icon ion-close" @click="currentCard=null"></i>
-
-            <template v-if="currentCard">
-              <h2 class="card-modal-title"
-                @click="editCardTextInput=true"
-                v-show="!editCardTextInput">
-                {{ currentCard.text }}</h2>
-              <input v-focus
-                class="card-modal-title"
-                v-show="editCardTextInput"
-                @keyup.enter="editCardText"
-                v-model="currentCard.text"
-                @blur="editCardText">
-
-              <p class="card-modal-desc"
-                @click="editCardDescInput=true"
-                v-show="!editCardDescInput">
-                {{ currentCard.desc }}</p>
-              <input v-focus class="card-modal-desc"
-                v-show="editCardDescInput"
-                @keyup.enter="editCardDesc"
-                v-model="currentCard.desc"
-                @blur="editCardDesc">
-
-              <p class="card-modal-category"
-                @click="editCardCategoryInput=true"
-                v-show="!editCardCategoryInput">
-                Artist: {{ currentCard.category }}</p>
-              <input v-focus class="card-modal-category"
-                v-show="editCardCategoryInput"
-                @keyup.enter="editCardCategory"
-                v-model="currentCard.category"
-                @blur="editCardCategory">
-
-            </template>
-
-
-            <div class="images-wrapper" v-if="currentCard">
-                <input id="card-image-upload" type="file" name="pic" accept="image/*" @change="uploadImage">
-              <img v-for="image in currentCard.images" :src="image" alt="image">
+        <button class="button" @click="homepage">Homepage</button>
+          <div v-if="page == 1">
+            <div class="welome">
+            Welcome to Platform! This site was designed for artists and
+            writers to share and enjoy each others' work.
+            <!-- <img src="SpotBright/2.jpg" height=200 alt="test"> -->
             </div>
-            <div class="sidebar" v-if="currentCard">
-              <div class="card-modal-todo">
-                <h3>TODO</h3>
-                <div v-for="(todo, todoIndex) in currentCard.todos">
-                  <p>
-                    <i class="icon ion-close-round"
-                      @click="deleteTodo(currentCard, todoIndex)"></i>
-                    {{ todoIndex+1 }}. {{ todo }}
-                  </p>
-                </div>
-                <input placeholder="Add a TODO"
-                  v-model="todoText"
-                  @keyup.enter="addTodo(currentCard)">
-              </div>
-              <div class="card-modal-todo" v-if="currentCard">
-                <!-- changed div to card-modal-todo instead of card-modal-comment for black hand mouseover -->
-                  <h3>Comments</h3>
-                  <div v-for="(comment, commentIndex) in currentCard.comments">
-                    <p>
-                      <i class="icon ion-close-round"
-                        @click="deleteComment(currentCard, commentIndex)"></i>
-                      <strong>{{ comment.user }}:</strong> {{ comment.text }}
-                    </p>
+          </div>
+
+        <button class="button" @click="writersPage">Writing</button>
+          <div v-if="page == 3">
+            <div id="lists-wrapper">
+              <div>
+              <div v-for="(list, listIndex) in pages" class="list"
+                :class="{'list-horiz':horizView}"
+                :key="list.id" :data-key="list.id">
+
+                <div class="tooltip">
+                  <i class="icon ion-arrow-left-a"
+                    @click.stop="moveList(listIndex, -1)"></i>
+                  <i class="icon ion-arrow-right-a"
+                    @click.stop="moveList(listIndex, 1)"></i>
+                  <i class="icon ion-minus-round"
+                    v-show="!list.collapsed"
+                    @click.stop="collapseExpandList(listIndex)"></i>
+                  <i class="icon ion-plus-round"
+                    v-show="list.collapsed"
+                    @click.stop="collapseExpandList(listIndex)"></i>
+                  <i class="icon ion-close-round"
+                    @click.stop="deleteList(listIndex)"></i>
+                  <div v-if='this.name === "Admin"'>  <!-- only show x button for removing medium cat if admin -->
+                  <i class="icon ion-close-round"
+                    @click.stop="deleteList(listIndex)"></i>
                   </div>
-                  <input placeholder="Add a comment"
-                    v-model="commentText"
-                    @keyup.enter="addComment(currentCard)">
                 </div>
+
+                <h2
+                  @click="editTitleInput=list.id"
+                  v-show="editTitleInput!==list.id">
+                  {{ list.title }}</h2>
+                <input v-focus class="title-input"
+                  v-show="editTitleInput===list.id"
+                  @keyup.enter="editTitle"
+                  v-model="list.title"
+                  @blur="editTitle">
+
+                <p class="collapse-notify" v-show="list.collapsed">List is collapsed</p>
+
+                <div class="cards-wrapper"
+                  v-show="!list.collapsed"
+                  :class="{'cards-wrapper-horiz':horizView}">
+                  <div class="card"
+                    :class="{'card-horiz':horizView}"
+                    v-for="(card, cardIndex) in list.cards"
+                    v-show="currentCategory == card.category || currentCategory == ''"
+                    @click="showCardModal(card)"
+                    :key="card.id" >
+                    <!-- <img v-if="card.images" :src="card.images[0]" alt="card image"> -->
+                    <p>{{ card.text }}</p>
+                    <div class="tooltip">
+                      <i class="icon ion-arrow-left-a"
+                        @click.stop="moveCard(card, listIndex, -1)"></i>
+                      <i class="icon ion-arrow-right-a"
+                        @click.stop="moveCard(card, listIndex, 1)"></i>
+                      <i class="icon ion-close-round"
+                        @click.stop="deleteCard(listIndex, cardIndex)"></i>
+                    </div>
+                  </div>
+                </div>
+                <div class="add-card"
+                  @click="visibleInput=list.id"
+                  v-show="visibleInput!==list.id">
+                  Add new work (title here)
+                </div>
+                <input v-focus class="card-input"
+                  v-show="visibleInput===list.id"
+                  @keyup.enter="newCard(list)"
+                  v-model="list.inputText"
+                  @blur="visibleInput=null">
+              </div>
+              <div class="add-list">
+                <input class="card-input" placeholder="Add a new medium"
+                  v-model="addListText"
+                  @keyup.enter="newList">
+              </div>
+            </div>
+          </div>
+
+
+          <div class="card-modal modal" v-show="currentCard">
+              <div class="background">
+                <i class="icon ion-close" @click="currentCard=null"></i>
+
+                <template v-if="currentCard">
+                  <h2 class="card-modal-title"
+                    @click="editCardTextInput=true"
+                    v-show="!editCardTextInput">
+                    {{ currentCard.text }}</h2>
+                  <input v-focus
+                    class="card-modal-title"
+                    v-show="editCardTextInput"
+                    @keyup.enter="editCardText"
+                    v-model="currentCard.text"
+                    @blur="editCardText">
+
+                  <p class="card-modal-desc"
+                    @click="editCardDescInput=true"
+                    v-show="!editCardDescInput">
+                    {{ currentCard.desc }}</p>
+                  <input v-focus class="card-modal-desc"
+                    v-show="editCardDescInput"
+                    @keyup.enter="editCardDesc"
+                    v-model="currentCard.desc"
+                    @blur="editCardDesc">
+
+                  <p class="card-modal-category"
+                    @click="editCardCategoryInput=true"
+                    v-show="!editCardCategoryInput">
+                    Author: {{ currentCard.category }}</p>
+                  <input v-focus class="card-modal-category"
+                    v-show="editCardCategoryInput"
+                    @keyup.enter="editCardCategory"
+                    v-model="currentCard.category"
+                    @blur="editCardCategory">
+
+                </template>
+
+
+                <div class="images-wrapper" v-if="currentCard">
+                    <input id="card-image-upload" type="file" name="pic" accept=".xlsx,.xls, image/*,.doc, .docx,.ppt, .pptx,.txt,.pdf" @change="uploadImage">
+                  <!-- <img v-for="image in currentCard.images[0]" :src="currentCard.link" alt="image"> -->
+                  <!-- <p> {{ currentCard.link }} </p> -->
+                  <!-- <button class="button">Art</button> -->
+                  <!-- <embed src="'https://drive.google.com/viewerng/viewer?embedded=true&url='+'currentCard.link'" width="500" height="375" type="application/pdf"> -->
+                  <embed :src="currentCard.link" width=100% height="500" alt="pdf" pluginspage="http://www.adobe.com/products/acrobat/readstep2.html">
+                </div>
+                <div class="sidebar" v-if="currentCard">
+                  <div class="card-modal-todo" v-if="currentCard">
+                    <!-- changed div to card-modal-todo instead of card-modal-comment for black hand mouseover -->
+                      <h3>Comments</h3>
+                      <div v-for="(comment, commentIndex) in currentCard.comments">
+                        <p>
+                          <i class="icon ion-close-round"
+                            @click="deleteComment(currentCard, commentIndex)"></i>
+                          <strong>{{ comment.user }}:</strong> {{ comment.text }}
+                        </p>
+                      </div>
+                      <input placeholder="Add a comment"
+                        v-model="commentText"
+                        @keyup.enter="addComment(currentCard)">
+                    </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- this is divider -->
+          <!-- BEGIN LISTSSSSSSSSS -->
+
+        <button class="button" @click="artistsPage">Art</button>
+          <div v-if="page == 2">
+            <div id="lists-wrapper">
+              <div v-for="(list, listIndex) in lists" class="list"
+                :class="{'list-horiz':horizView}"
+                :key="list.id" :data-key="list.id">
+
+                <div class="tooltip">
+                  <i class="icon ion-arrow-left-a"
+                    @click.stop="moveList(listIndex, -1)"></i>
+                  <i class="icon ion-arrow-right-a"
+                    @click.stop="moveList(listIndex, 1)"></i>
+                  <i class="icon ion-minus-round"
+                    v-show="!list.collapsed"
+                    @click.stop="collapseExpandList(listIndex)"></i>
+                  <i class="icon ion-plus-round"
+                    v-show="list.collapsed"
+                    @click.stop="collapseExpandList(listIndex)"></i>
+                    <i class="icon ion-close-round"
+                      @click.stop="deleteList(listIndex)"></i>
+                  <div v-if='this.name === "Admin"'>  <!-- only show x button for removing medium cat if admin -->
+                  <i class="icon ion-close-round"
+                    @click.stop="deleteList(listIndex)"></i>
+                  </div>
+                </div>
+
+                <h2
+                  @click="editTitleInput=list.id"
+                  v-show="editTitleInput!==list.id">
+                  {{ list.title }}</h2>
+                <input v-focus class="title-input"
+                  v-show="editTitleInput===list.id"
+                  @keyup.enter="editTitle"
+                  v-model="list.title"
+                  @blur="editTitle">
+
+                <p class="collapse-notify" v-show="list.collapsed">List is collapsed</p>
+
+                <div class="cards-wrapper"
+                  v-show="!list.collapsed"
+                  :class="{'cards-wrapper-horiz':horizView}">
+                  <div class="card"
+                    :class="{'card-horiz':horizView}"
+                    v-for="(card, cardIndex) in list.cards"
+                    v-show="currentCategory == card.category || currentCategory == ''"
+                    @click="showCardModal(card)"
+                    :key="card.id" >
+                    <img v-if="card.images" :src="card.images[0]" alt="card image">
+                    <p>{{ card.text }}</p>
+                    <div class="tooltip">
+                      <i class="icon ion-arrow-left-a"
+                        @click.stop="moveCard(card, listIndex, -1)"></i>
+                      <i class="icon ion-arrow-right-a"
+                        @click.stop="moveCard(card, listIndex, 1)"></i>
+                      <i class="icon ion-close-round"
+                        @click.stop="deleteCard(listIndex, cardIndex)"></i>
+                    </div>
+                  </div>
+                </div>
+                <div class="add-card"
+                  @click="visibleInput=list.id"
+                  v-show="visibleInput!==list.id">
+                  Add new work (title here)
+                </div>
+                <input v-focus class="card-input"
+                  v-show="visibleInput===list.id"
+                  @keyup.enter="newCard(list)"
+                  v-model="list.inputText"
+                  @blur="visibleInput=null">
+              </div>
+              <div class="add-list">
+                <input class="card-input" placeholder="Add a new medium"
+                  v-model="addListText"
+                  @keyup.enter="newList">
+              </div>
+            </div>
+
+
+
+          <!-- <div class="edit-user-modal modal" v-show="editUser">
+            <div class="center">
+              <input class="card-input mb10" v-model="name" placeholder="Userame">
+              <input class="card-input mb10" v-model="email" placeholder="Email">
+              <div class="lr-button" @click="editUserSubmit">Return to Site</div>
+            </div>
+          </div> -->
+
+          <div class="card-modal modal" v-show="currentCard">
+              <div class="background">
+                <i class="icon ion-close" @click="currentCard=null"></i>
+
+                <template v-if="currentCard">
+                  <h2 class="card-modal-title"
+                    @click="editCardTextInput=true"
+                    v-show="!editCardTextInput">
+                    {{ currentCard.text }}</h2>
+                  <input v-focus
+                    class="card-modal-title"
+                    v-show="editCardTextInput"
+                    @keyup.enter="editCardText"
+                    v-model="currentCard.text"
+                    @blur="editCardText">
+
+                  <p class="card-modal-desc"
+                    @click="editCardDescInput=true"
+                    v-show="!editCardDescInput">
+                    {{ currentCard.desc }}</p>
+                  <input v-focus class="card-modal-desc"
+                    v-show="editCardDescInput"
+                    @keyup.enter="editCardDesc"
+                    v-model="currentCard.desc"
+                    @blur="editCardDesc">
+
+                  <p class="card-modal-category"
+                    @click="editCardCategoryInput=true"
+                    v-show="!editCardCategoryInput">
+                    Artist: {{ currentCard.category }}</p>
+                  <input v-focus class="card-modal-category"
+                    v-show="editCardCategoryInput"
+                    @keyup.enter="editCardCategory"
+                    v-model="currentCard.category"
+                    @blur="editCardCategory">
+
+                </template>
+
+
+                <div class="images-wrapper" v-if="currentCard">
+                    <input id="card-image-upload" type="file" name="pic" accept=".xlsx,.xls,image/*,.doc, .docx,.ppt, .pptx,.txt,.pdf" @change="uploadImage">
+                  <img v-for="image in currentCard.images" :src="image" alt="image">
+                </div>
+                <div class="sidebar" v-if="currentCard">
+                  <div class="card-modal-todo" v-if="currentCard">
+                    <!-- changed div to card-modal-todo instead of card-modal-comment for black hand mouseover -->
+                      <h3>Comments</h3>
+                      <div v-for="(comment, commentIndex) in currentCard.comments">
+                        <p>
+                          <i class="icon ion-close-round"
+                            @click="deleteComment(currentCard, commentIndex)"></i>
+                          <strong>{{ comment.user }}:</strong> {{ comment.text }}
+                        </p>
+                      </div>
+                      <input placeholder="Add a comment"
+                        v-model="commentText"
+                        @keyup.enter="addComment(currentCard)">
+                    </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-
-    </div>
     <script src="work.js"></script>
+    <script type="text/javascript">
+    var count=84;
+    function rand() {
+      var num = Math.ceil( Math.random() * count );
+      document.body.background = 'SpotBright/'+num+'.jpg';
+      document.body.style.backgroundSize = "cover";// Background repeat
+      }
+    </script>
+
+    }
+    <script type="text/javascript">
+    rand();
+    </script>
 
   </body>
 </html>
